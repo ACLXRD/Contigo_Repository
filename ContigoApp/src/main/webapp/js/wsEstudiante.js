@@ -180,6 +180,8 @@ $("#btn_enviar_mns").click(function () {
 		$("#mensajes").append(mensaje);
 		$('input[type="text"]').val('');
 		$("#mensajes").animate({ scrollTop: $("#mensajes").height()*(($("#mensajes").children()).length)});
+
+		
 	}
 
 });
