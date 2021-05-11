@@ -18,11 +18,12 @@ import usa.utils.Utils;
 public class EstudianteDao implements IDaoEstudiante {
 
     private PreparedStatement pat;
+    private ResultSet rs;
 
     @Override
     public boolean crear(Estudiante estudiante) {
         try {
-            String sql = "call insertarEstudiante(?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "call insertarEstudiante(?,?,?,?,?,?,?,?,?,?,?,?)";
             CallableStatement call = conn.prepareCall(sql);
             call.setString("_documento", estudiante.getDocumento());
             call.setInt("_TIPO_DOCUMENTO_ID", estudiante.getTipoDocumento());
@@ -32,9 +33,10 @@ public class EstudianteDao implements IDaoEstudiante {
             call.setString("_segundoApellido", estudiante.getSegundoApellido());
             call.setString("_token", Utils.generateNewToken());
             call.setString("_fechaNacimiento", estudiante.getFechaDeNacimiento());
-            call.setString("_genero",estudiante.getGenero());
+            call.setString("_genero", estudiante.getGenero());
             call.setString("_contraseña", estudiante.getContraseña());
             call.setString("_GRADO_codigo", estudiante.getGrado());
+            call.setString("_correo",estudiante.getCorreo());
             call.execute();
             return true;
         } catch (SQLException ex) {
@@ -47,17 +49,27 @@ public class EstudianteDao implements IDaoEstudiante {
     public Estudiante consultar(String id) {
         Estudiante estudiante = null;
         try {
-
-            String sql = "select * from Estudiante where documento =\"" + id + "\"";
+            String sql = "select p.* , e.GRADO_codigo from persona as p  \n"
+                    + "inner join estudiante as e on e.PERSONA_documento =p.documento\n where PERSONA_documento =\"" + id + "\"";
             pat = conn.prepareStatement(sql);
-            ResultSet rs = pat.executeQuery();
-            estudiante = new Estudiante();
+            rs = pat.executeQuery();
             while (rs.next()) {
-                estudiante.setPrimerApellido("primerNombre");
+                estudiante = new Estudiante();
+                estudiante.setPrimerApellido("p.primerNombre");
+                estudiante.setDocumento(rs.getString("p.documento"));
+                estudiante.setPrimerNombre(rs.getString("p.primerNombre"));
+                estudiante.setSegundoNombre(rs.getString("p.segundoNombre"));
+                estudiante.setPrimerApellido(rs.getString("p.primerApellido"));
+                estudiante.setSegundoApellido(rs.getString("p.segundoApellido"));
+                estudiante.setFechaDeNacimiento(rs.getDate("p.fechaNacimiento").toString());
+                estudiante.setGenero(rs.getString("p.genero"));
+                estudiante.setGrado(rs.getString("GRADO_codigo"));
+                estudiante.setCorreo(rs.getString("correo"));
             }
+            rs.close();
+            pat.close();
         } catch (SQLException ex) {
             Logger.getLogger(EstudianteDao.class.getName()).log(Level.SEVERE, null, ex);
-
         }
         return estudiante;
     }
@@ -72,15 +84,41 @@ public class EstudianteDao implements IDaoEstudiante {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    
+    @Override
+    public LinkedList<Estudiante> listarTodos() {
+        LinkedList<Estudiante> estudiantes = new LinkedList();
+        try {
+            String sql = "select p.* , e.GRADO_codigo from persona as p  \n"
+                    + "inner join estudiante as e on e.PERSONA_documento =p.documento\n";
+            pat = conn.prepareStatement(sql);
+            ResultSet rs = pat.executeQuery();
+            while (rs.next()) {
+                Estudiante estudiante = new Estudiante();
+                estudiante.setPrimerApellido("p.primerNombre");
+                estudiante.setDocumento(rs.getString("p.documento"));
+                estudiante.setPrimerNombre(rs.getString("p.primerNombre"));
+                estudiante.setSegundoNombre(rs.getString("p.segundoNombre"));
+                estudiante.setPrimerApellido(rs.getString("p.primerApellido"));
+                estudiante.setSegundoApellido(rs.getString("p.segundoApellido"));
+                estudiante.setFechaDeNacimiento(rs.getDate("p.fechaNacimiento").toString());
+                estudiante.setGenero(rs.getString("p.genero"));
+                estudiante.setCorreo(rs.getString("correo"));
+                estudiantes.add(estudiante);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(EstudianteDao.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
+        return estudiantes;
+    }
+    @Override
     public Estudiante consultarPorToken(String token) {
         Estudiante estudiante = null;
         try {
 
             String sql = "select p.* , e.GRADO_codigo from persona as p  \n"
                     + "inner join estudiante as e on e.PERSONA_documento =p.documento\n"
-                    + "where p.token = '" + token +"';";
+                    + "where p.token = '" + token + "';";
             pat = conn.prepareStatement(sql);
             ResultSet rs = pat.executeQuery();
             while (rs.next()) {
@@ -93,6 +131,7 @@ public class EstudianteDao implements IDaoEstudiante {
                 estudiante.setSegundoApellido(rs.getString("p.segundoApellido"));
                 estudiante.setFechaDeNacimiento(rs.getDate("p.fechaNacimiento").toString());
                 estudiante.setGenero(rs.getString("p.genero"));
+                estudiante.setCorreo(rs.getString("correo"));
             }
         } catch (SQLException ex) {
             Logger.getLogger(EstudianteDao.class.getName()).log(Level.SEVERE, null, ex);
@@ -100,9 +139,9 @@ public class EstudianteDao implements IDaoEstudiante {
         }
         return estudiante;
     }
-    
-     public Estudiante consultarPorTokenGrado(String id) {
-             Estudiante estudiante = null;
+    @Override
+    public Estudiante consultarPorTokenGrado(String id) {
+        Estudiante estudiante = null;
         try {
             String sql = "select * from Estudiante where PERSONA_documento =\"" + id + "\"";
             pat = conn.prepareStatement(sql);
@@ -138,6 +177,7 @@ public class EstudianteDao implements IDaoEstudiante {
                 estudiante.setFechaDeNacimiento(rs.getDate("p.fechaNacimiento").toString());
                 estudiante.setGenero(rs.getString("p.genero"));
                 estudiante.setToken(rs.getString("p.token"));
+                estudiante.setCorreo(rs.getString("correo"));
             }
         } catch (SQLException ex) {
             Logger.getLogger(EstudianteDao.class.getName()).log(Level.SEVERE, null, ex);
@@ -149,9 +189,12 @@ public class EstudianteDao implements IDaoEstudiante {
     @Override
     public LinkedList<Estudiante> listarGradosEstudiante(String id) {
         LinkedList<Estudiante> estudiantes = new LinkedList<>();
-        String sql = "select persona.documento, persona.primerNombre, persona.segundoNombre, persona.primerApellido, persona.segundoApellido, clasificacion.grado \n" +
-        "from Estudiante, Grado, clasificacion, persona \n" +
-        "where Estudiante.GRADO_codigo = grado.codigo and clasificacion.id = "+ id+"  and clasificacion.id = grado.CLASIFICACION_id and estudiante.PERSONA_documento= persona.documento;";
+        String sql = "select p.documento, p.primerNombre, p.segundoNombre, p.primerApellido, p.segundoApellido, c.grado \n" +
+        "from persona as p \n" +
+        "inner join Estudiante as e on e.PERSONA_documento= p.documento\n" +
+        "inner join Grado as g  on e.Grado_codigo=g.codigo\n" +
+        "inner join clasificacion as c on c.id=g.CLASIFICACION_id\n" +
+        "where c.id = '"+id+"';";
         try {
             pat = conn.prepareStatement(sql);
             ResultSet rs = pat.executeQuery();
@@ -163,7 +206,8 @@ public class EstudianteDao implements IDaoEstudiante {
                 estudi.setSegundoNombre(rs.getString("segundoNombre"));
                 estudi.setPrimerApellido(rs.getString("primerApellido"));
                 estudi.setSegundoApellido(rs.getString("segundoApellido"));
-                estudi.setSegundoApellido(rs.getString("grado"));
+                estudi.setGrado(rs.getString("grado"));
+                estudi.setCorreo(rs.getString("correo"));
                 estudiantes.add(estudi);
             }
             rs.close();
@@ -173,10 +217,4 @@ public class EstudianteDao implements IDaoEstudiante {
         }
         return estudiantes; //To change body of generated methods, choose Tools | Templates.
     }
-
-    @Override
-    public LinkedList<Estudiante> listarTodos() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 }

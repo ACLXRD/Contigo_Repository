@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import usa.factory.AbstractFactory;
-import usa.factory.FactoryDao;
 import usa.factory.Producer;
 import usa.modelo.dao.IDao;
 import usa.modelo.dao.TipoDocumentoDao;
@@ -31,10 +30,9 @@ import usa.utils.Utils;
 public class TipoDocumentoServlet extends HttpServlet {
     
     AbstractFactory factoryDao = Producer.getFabrica("DAO");
-    IDao dao = (IDao) factoryDao.obtener("TipoDocumentoDao");
-        
-        
-// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+        IDao dao = (IDao) factoryDao.obtener("TipoDocumentoDao");
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
