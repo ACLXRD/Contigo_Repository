@@ -7,12 +7,14 @@ document.getElementById('hablar').addEventListener("click", () => {
     decir(texto);*/
     
     speechSynthesis.onvoiceschanged = () => {
-        var text = texto2; 
+        var texto2= document.getElementById("texto2");
+        var text = document.getElementById("texto2"); 
         const synth = speechSynthesis
         const voices = synth.getVoices()
         console.log(text)
         const utterThis = new SpeechSynthesisUtterance(text)
         utterThis.voice = voices.find(v => v.name === 'Jorge')
+        utterThis.volume = 0.5
         utterThis.pitch = 0
         utterThis.rate = 1
         synth.speak(utterThis)
