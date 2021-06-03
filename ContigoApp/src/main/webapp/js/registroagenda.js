@@ -1,6 +1,6 @@
 let horas = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
-var horainicio=0;
-var horafin=0;
+var horainicio = 0;
+var horafin = 0;
 var fechainicio
 var fechafin
 
@@ -15,6 +15,7 @@ $("#Button3").on("click", function () {
     fechainicio = $('#fecha').val();
     fechafin = $('#fecha2').val();
     validarFechasHoras();
+
 });
 
 function crearAgenda(obj) {
@@ -28,7 +29,7 @@ function crearAgenda(obj) {
             if (response.tipo == "ok") {
                 toastr.success('Se ha creado la agenda del personal')
                 limpiarInput()
-            } 
+            }
         },
         error: function (response) {
 
@@ -40,7 +41,7 @@ function validarFechasHoras() {
     var f1 = new Date(fechainicio);
     var f2 = new Date(fechafin);
     if (f1 <= f2) {
-        if (horainicio < horafin+1) {
+        if (parseInt(horainicio) <= parseInt(horafin)) {
             var obj = {
                 personal: personal,
                 fechainicio: fechainicio,
@@ -77,7 +78,7 @@ function cargarHorasSelect() {
 }
 
 
-function limpiarInput(){
+function limpiarInput() {
     document.getElementById("horainicio").value = "";
     document.getElementById("horafin").value = "";
     document.getElementById("fecha").value = "";
